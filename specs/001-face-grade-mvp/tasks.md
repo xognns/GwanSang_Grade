@@ -10,7 +10,7 @@
 - [x] [T002] Add shared `.gitignore` and temp artifact ignore rules for upload/result artifacts in repo root
 - [x] [T003] Add backend packaging and dependency baseline in `backend/requirements-dev.txt`
 - [x] [T004] Add frontend dependencies and scripts in `frontend/package.json` for React 19/Vite/Vitest/Playwright
-- [ ] [T005] [P] Configure `backend/` and `frontend/` test runners (`pytest` and `vitest`) in local config files
+- [x] [T005] [P] Configure `backend/` and `frontend/` test runners (`pytest` and `vitest`) in local config files
 - [ ] [T006] [P] Configure `frontend/.env.example` and `backend/.env.example` with API base url and media limits
 
 ## Phase 2: Foundational (Blocking Prerequisites)
