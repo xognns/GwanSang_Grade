@@ -14,7 +14,6 @@ COPY . /app
 ENV API_BASE_URL=https://api.example.com
 ENV MAX_UPLOAD_BYTES=31457280
 ENV CORS_ALLOW_ORIGINS=
-ENV CORS_ALLOW_ORIGIN_REGEX=^https://.*\.vercel\.app$
 
 EXPOSE 8000
 
