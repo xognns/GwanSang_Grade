@@ -47,8 +47,6 @@ def analysis_form(
     name: Annotated[str, Form()] = "",
     file: Annotated[UploadFile | None, File(description="jpg/jpeg 또는 png 파일")] = None,
 ) -> tuple[str, UploadFile | None]:
-    if file is None:
-        raise ValueError("missing_file")
     return name, file
 
 

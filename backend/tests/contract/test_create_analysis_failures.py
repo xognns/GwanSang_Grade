@@ -1,5 +1,6 @@
 from backend.app.domain.errors import ErrorCode
 from pathlib import Path
+from backend.app.services.analysis_service import AnalysisService
 
 
 def _fixture_bytes(name: str) -> bytes:
@@ -28,3 +29,23 @@ def test_missing_name_is_rejected(client):
     response = client.post("/api/v1/analyses", data={"name": "   "}, files=files)
     assert response.status_code == 400
     assert response.json()["code"] == ErrorCode.missing_file.value
+
+
+def test_missing_file_is_rejected(client):
+    response = client.post("/api/v1/analyses", data={"name": "하루"})
+    assert response.status_code == 400
+    assert response.json()["code"] == ErrorCode.missing_file.value
+
+
+def test_analysis_failed_is_500(monkeypatch, client):
+    class FailingAnalysisService(AnalysisService):
+        def run(self, name: str, file_name: str, file_bytes: bytes, content_type: str | None):
+            return None, ErrorCode.analysis_failed
+
+    monkeypatch.setattr("backend.app.api.analyses.AnalysisService", FailingAnalysisService)
+
+    payload = _fixture_bytes("face_single.png")
+    files = {"file": ("avatar.png", payload, "image/png")}
+    response = client.post("/api/v1/analyses", data={"name": "하루"}, files=files)
+    assert response.status_code == 500
+    assert response.json()["code"] == ErrorCode.analysis_failed.value

@@ -13,9 +13,8 @@ router = APIRouter()
 async def create_analysis(
     form: tuple[str, object] = Depends(analysis_form),
 ):
-    try:
-        name, file = form
-    except ValueError:
+    name, file = form
+    if file is None:
         descriptor = describe_error(ErrorCode.missing_file)
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -31,7 +30,13 @@ async def create_analysis(
         content_type=file.content_type,
     )
     if error_code:
-        http_status = status.HTTP_400_BAD_REQUEST if error_code in {ErrorCode.missing_file, ErrorCode.unsupported_format, ErrorCode.file_too_large} else status.HTTP_422_UNPROCESSABLE_ENTITY
+        http_status = (
+            status.HTTP_400_BAD_REQUEST
+            if error_code in {ErrorCode.missing_file, ErrorCode.unsupported_format, ErrorCode.file_too_large}
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+            if error_code in {ErrorCode.no_face, ErrorCode.multiple_faces}
+            else status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
         descriptor = describe_error(error_code)
         return JSONResponse(
             status_code=http_status,
