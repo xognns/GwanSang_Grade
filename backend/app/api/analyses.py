@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from backend.app.domain.errors import ErrorCode, describe_error
 from backend.app.services.analysis_service import AnalysisService
 from backend.app.api.schemas import AnalysisResponseModel, analysis_form
+from backend.app.services.validation_service import MAX_SIZE_BYTES
 from backend.app.services.result_mapper import to_api_response
 
 router = APIRouter()
@@ -21,7 +22,14 @@ async def create_analysis(
             content={"code": descriptor.code, "message": descriptor.message, "recoverable": descriptor.recoverable},
         )
 
-    content = await file.read()
+    content = await file.read(MAX_SIZE_BYTES + 1)
+    if len(content) > MAX_SIZE_BYTES:
+        descriptor = describe_error(ErrorCode.file_too_large)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"code": descriptor.code, "message": descriptor.message, "recoverable": descriptor.recoverable},
+        )
+
     service = AnalysisService()
     result, error_code = service.run(
         name=name,

@@ -1,6 +1,7 @@
 from backend.app.domain.errors import ErrorCode
 from pathlib import Path
 from backend.app.services.analysis_service import AnalysisService
+from backend.app.services.validation_service import MAX_SIZE_BYTES
 
 
 def _fixture_bytes(name: str) -> bytes:
@@ -49,3 +50,22 @@ def test_analysis_failed_is_500(monkeypatch, client):
     response = client.post("/api/v1/analyses", data={"name": "하루"}, files=files)
     assert response.status_code == 500
     assert response.json()["code"] == ErrorCode.analysis_failed.value
+
+
+def test_oversize_file_is_rejected_before_analysis(monkeypatch, client):
+    state = {"called": False}
+
+    class FailingAnalysisService(AnalysisService):
+        def run(self, name: str, file_name: str, file_bytes: bytes, content_type: str | None):
+            state["called"] = True
+            return None, ErrorCode.analysis_failed
+
+    monkeypatch.setattr("backend.app.api.analyses.AnalysisService", FailingAnalysisService)
+
+    payload = b"a" * (MAX_SIZE_BYTES + 1)
+    files = {"file": ("avatar.png", payload, "image/png")}
+    response = client.post("/api/v1/analyses", data={"name": "하루"}, files=files)
+
+    assert response.status_code == 400
+    assert response.json()["code"] == ErrorCode.file_too_large.value
+    assert state["called"] is False
