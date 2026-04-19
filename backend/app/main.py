@@ -8,7 +8,7 @@ def build_app() -> FastAPI:
     app = FastAPI(title="얼굴 성적기 API", version="0.1.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origin_regex=r"^https://.*\\.vercel\\.app$",
+        allow_origin_regex=r"^https://.*\.vercel\.app$",
         allow_methods=["*"],
         allow_headers=["*"],
         allow_credentials=False,
