@@ -23,6 +23,11 @@ function Get-SpecKitEffectiveBranchName {
     return $Branch
 }
 
+function Test-AllowedCollaborativeBranch {
+    param([string]$Branch)
+    return $Branch -in @('main', 'front-end', 'back-end')
+}
+
 function Test-FeatureBranch {
     param(
         [string]$Branch,
@@ -38,13 +43,9 @@ function Test-FeatureBranch {
     $raw = $Branch
     $Branch = Get-SpecKitEffectiveBranchName $raw
 
-    # Accept sequential prefix (3+ digits) but exclude malformed timestamps
-    # Malformed: 7-or-8 digit date + 6-digit time with no trailing slug (e.g. "2026031-143022" or "20260319-143022")
-    $hasMalformedTimestamp = ($Branch -match '^[0-9]{7}-[0-9]{6}-') -or ($Branch -match '^(?:\d{7}|\d{8})-\d{6}$')
-    $isSequential = ($Branch -match '^[0-9]{3,}-') -and (-not $hasMalformedTimestamp)
-    if (-not $isSequential -and $Branch -notmatch '^\d{8}-\d{6}-') {
-        [Console]::Error.WriteLine("ERROR: Not on a feature branch. Current branch: $raw")
-        [Console]::Error.WriteLine("Feature branches should be named like: 001-feature-name, 1234-feature-name, or 20260319-143022-feature-name")
+    if (-not (Test-AllowedCollaborativeBranch $Branch)) {
+        [Console]::Error.WriteLine("ERROR: Not on an allowed collaborative branch. Current branch: $raw")
+        [Console]::Error.WriteLine("Allowed branches are: main, front-end, back-end")
         return $false
     }
     return $true

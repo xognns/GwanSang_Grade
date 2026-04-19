@@ -23,15 +23,15 @@ if ($Help) {
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Json               Output in JSON format"
-    Write-Host "  -DryRun             Compute branch name without creating the branch"
-    Write-Host "  -AllowExistingBranch  Switch to branch if it already exists instead of failing"
-    Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the branch"
-    Write-Host "  -Number N           Specify branch number manually (overrides auto-detection)"
+    Write-Host "  -DryRun             Compute feature ID without creating directories or files"
+    Write-Host "  -AllowExistingBranch  Retained for compatibility; ignored in this repository"
+    Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the feature ID"
+    Write-Host "  -Number N           Specify feature number manually (overrides auto-detection)"
     Write-Host "  -Timestamp          Use timestamp prefix (YYYYMMDD-HHMMSS) instead of sequential numbering"
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Environment variables:"
-    Write-Host "  GIT_BRANCH_NAME     Use this exact branch name, bypassing all prefix/suffix generation"
+    Write-Host "  GIT_BRANCH_NAME     Use this exact feature ID, bypassing all prefix/suffix generation"
     Write-Host ""
     exit 0
 }
@@ -222,6 +222,42 @@ if (Get-Command Test-HasGit -ErrorAction SilentlyContinue) {
 Set-Location $repoRoot
 
 $specsDir = Join-Path $repoRoot 'specs'
+$featureContextFile = Join-Path $repoRoot '.specify/feature.json'
+
+$activeBranch = 'main'
+if ($hasGit) {
+    try {
+        $activeBranch = (git -C $repoRoot rev-parse --abbrev-ref HEAD 2>$null).Trim()
+    } catch {
+        $activeBranch = ''
+    }
+    if ([string]::IsNullOrWhiteSpace($activeBranch)) {
+        throw "Could not determine the current git branch."
+    }
+    if (-not (Test-FeatureBranch -Branch $activeBranch -HasGit $true)) {
+        exit 1
+    }
+}
+
+function Write-FeatureContext {
+    param(
+        [string]$Path,
+        [string]$ActiveBranch,
+        [string]$FeatureId
+    )
+
+    $parent = Split-Path $Path -Parent
+    if (-not (Test-Path $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+
+    $payload = [ordered]@{
+        branch = $ActiveBranch
+        feature = $FeatureId
+        feature_directory = "specs/$FeatureId"
+    }
+    $payload | ConvertTo-Json | Set-Content -Path $Path
+}
 
 function Get-BranchName {
     param([string]$Description)
@@ -258,16 +294,15 @@ function Get-BranchName {
     }
 }
 
-# Check for GIT_BRANCH_NAME env var override (exact branch name, no prefix/suffix)
+# Check for GIT_BRANCH_NAME env var override (exact feature ID, no prefix/suffix)
 if ($env:GIT_BRANCH_NAME) {
     $branchName = $env:GIT_BRANCH_NAME
     # Check 244-byte limit (UTF-8) for override names
     $branchNameUtf8ByteCount = [System.Text.Encoding]::UTF8.GetByteCount($branchName)
     if ($branchNameUtf8ByteCount -gt 244) {
-        throw "GIT_BRANCH_NAME must be 244 bytes or fewer in UTF-8. Provided value is $branchNameUtf8ByteCount bytes; please supply a shorter override branch name."
+        throw "GIT_BRANCH_NAME must be 244 bytes or fewer in UTF-8. Provided value is $branchNameUtf8ByteCount bytes; please supply a shorter override feature ID."
     }
-    # Extract FEATURE_NUM from the branch name if it starts with a numeric prefix
-    # Check timestamp pattern first (YYYYMMDD-HHMMSS-) since it also matches the simpler ^\d+ pattern
+    # Extract FEATURE_NUM from the feature ID if it starts with a numeric prefix.
     if ($branchName -match '^(\d{8}-\d{6})-') {
         $featureNum = $matches[1]
     } elseif ($branchName -match '^(\d+)-') {
@@ -319,73 +354,46 @@ if ($branchName.Length -gt $maxBranchLength) {
     $originalBranchName = $branchName
     $branchName = "$featureNum-$truncatedSuffix"
 
-    Write-Warning "[specify] Branch name exceeded GitHub's 244-byte limit"
+    Write-Warning "[specify] Feature ID exceeded the 244-byte compatibility limit"
     Write-Warning "[specify] Original: $originalBranchName ($($originalBranchName.Length) bytes)"
     Write-Warning "[specify] Truncated to: $branchName ($($branchName.Length) bytes)"
 }
 
+$featureDir = Join-Path $specsDir $branchName
+$specFile = Join-Path $featureDir 'spec.md'
+
 if (-not $DryRun) {
     if ($hasGit) {
-        $branchCreated = $false
-        $branchCreateError = ''
-        try {
-            $branchCreateError = git checkout -q -b $branchName 2>&1 | Out-String
-            if ($LASTEXITCODE -eq 0) {
-                $branchCreated = $true
-            }
-        } catch {
-            $branchCreateError = $_.Exception.Message
-        }
-
-        if (-not $branchCreated) {
-            $currentBranch = ''
-            try { $currentBranch = (git rev-parse --abbrev-ref HEAD 2>$null).Trim() } catch {}
-            $existingBranch = git branch --list $branchName 2>$null
-            if ($existingBranch) {
-                if ($AllowExistingBranch) {
-                    if ($currentBranch -eq $branchName) {
-                        # Already on the target branch
-                    } else {
-                        $switchBranchError = git checkout -q $branchName 2>&1 | Out-String
-                        if ($LASTEXITCODE -ne 0) {
-                            if ($switchBranchError) {
-                                Write-Error "Error: Branch '$branchName' exists but could not be checked out.`n$($switchBranchError.Trim())"
-                            } else {
-                                Write-Error "Error: Branch '$branchName' exists but could not be checked out. Resolve any uncommitted changes or conflicts and try again."
-                            }
-                            exit 1
-                        }
-                    }
-                } elseif ($Timestamp) {
-                    Write-Error "Error: Branch '$branchName' already exists. Rerun to get a new timestamp or use a different -ShortName."
-                    exit 1
-                } else {
-                    Write-Error "Error: Branch '$branchName' already exists. Please use a different feature name or specify a different number with -Number."
-                    exit 1
-                }
-            } else {
-                if ($branchCreateError) {
-                    Write-Error "Error: Failed to create git branch '$branchName'.`n$($branchCreateError.Trim())"
-                } else {
-                    Write-Error "Error: Failed to create git branch '$branchName'. Please check your git configuration and try again."
-                }
-                exit 1
-            }
-        }
+        Write-Verbose "[specify] Using collaborative branch '$activeBranch'; skipped git branch creation"
     } else {
         if ($Json) {
-            [Console]::Error.WriteLine("[specify] Warning: Git repository not detected; skipped branch creation for $branchName")
+            [Console]::Error.WriteLine("[specify] Warning: Git repository not detected; using logical feature ID '$branchName' only")
         } else {
-            Write-Warning "[specify] Warning: Git repository not detected; skipped branch creation for $branchName"
+            Write-Warning "[specify] Warning: Git repository not detected; using logical feature ID '$branchName' only"
         }
     }
 
-    $env:SPECIFY_FEATURE = $branchName
+    New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
+    if (-not (Test-Path $specFile)) {
+        $template = $null
+        if (Get-Command Resolve-Template -ErrorAction SilentlyContinue) {
+            try { $template = Resolve-Template "spec-template" $repoRoot } catch { $template = $null }
+        }
+        if ($template -and (Test-Path $template)) {
+            Copy-Item -Path $template -Destination $specFile
+        } else {
+            New-Item -ItemType File -Path $specFile -Force | Out-Null
+        }
+    }
+
+    Write-FeatureContext -Path $featureContextFile -ActiveBranch $activeBranch -FeatureId $branchName
 }
 
 if ($Json) {
     $obj = [PSCustomObject]@{
         BRANCH_NAME = $branchName
+        ACTIVE_BRANCH = $activeBranch
+        SPEC_FILE = $specFile
         FEATURE_NUM = $featureNum
         HAS_GIT = $hasGit
     }
@@ -395,9 +403,8 @@ if ($Json) {
     $obj | ConvertTo-Json -Compress
 } else {
     Write-Output "BRANCH_NAME: $branchName"
+    Write-Output "ACTIVE_BRANCH: $activeBranch"
+    Write-Output "SPEC_FILE: $specFile"
     Write-Output "FEATURE_NUM: $featureNum"
     Write-Output "HAS_GIT: $hasGit"
-    if (-not $DryRun) {
-        Write-Output "SPECIFY_FEATURE environment variable set to: $branchName"
-    }
 }

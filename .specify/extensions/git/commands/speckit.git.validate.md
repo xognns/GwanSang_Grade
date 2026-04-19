@@ -1,10 +1,10 @@
 ---
-description: "Validate current branch follows feature branch naming conventions"
+description: "Validate that the current branch matches the repository branch policy"
 ---
 
-# Validate Feature Branch
+# Validate Collaborative Branch
 
-Validate that the current Git branch follows the expected feature branch naming conventions.
+Validate that the current Git branch matches this repository's branch policy.
 
 ## Prerequisites
 
@@ -22,28 +22,25 @@ Get the current branch name:
 git rev-parse --abbrev-ref HEAD
 ```
 
-The branch name must match one of these patterns:
+The branch name must be one of:
 
-1. **Sequential**: `^[0-9]{3,}-` (e.g., `001-feature-name`, `042-fix-bug`, `1000-big-feature`)
-2. **Timestamp**: `^[0-9]{8}-[0-9]{6}-` (e.g., `20260319-143022-feature-name`)
+1. `main`
+2. `front-end`
+3. `back-end`
 
 ## Execution
 
-If on a feature branch (matches either pattern):
-- Output: `✓ On feature branch: <branch-name>`
-- Check if the corresponding spec directory exists under `specs/`:
-  - For sequential branches, look for `specs/<prefix>-*` where prefix matches the numeric portion
-  - For timestamp branches, look for `specs/<prefix>-*` where prefix matches the `YYYYMMDD-HHMMSS` portion
-- If spec directory exists: `✓ Spec directory found: <path>`
-- If spec directory missing: `⚠ No spec directory found for prefix <prefix>`
+If on an allowed branch:
+- Output: `✓ On collaborative branch: <branch-name>`
+- If `.specify/feature.json` or `SPECIFY_FEATURE_DIRECTORY` is present, the active spec directory may be resolved separately from the branch name
 
-If NOT on a feature branch:
-- Output: `✗ Not on a feature branch. Current branch: <branch-name>`
-- Output: `Feature branches should be named like: 001-feature-name or 20260319-143022-feature-name`
+If NOT on an allowed branch:
+- Output: `✗ Not on an allowed branch. Current branch: <branch-name>`
+- Output: `Allowed branches are: main, front-end, back-end`
 
 ## Graceful Degradation
 
 If Git is not installed or the directory is not a Git repository:
 - Check the `SPECIFY_FEATURE` environment variable as a fallback
-- If set, validate that value against the naming patterns
+- If set, note that it is only a logical feature identifier, not a git branch
 - If not set, skip validation with a warning

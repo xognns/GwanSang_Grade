@@ -2,9 +2,9 @@ schema_version: "1.0"
 
 extension:
   id: git
-  name: "Git Branching Workflow"
+  name: "Git Workflow"
   version: "1.0.0"
-  description: "Feature branch creation, numbering (sequential/timestamp), validation, and Git remote detection"
+  description: "Collaborative branch validation, feature ID allocation, and Git remote detection"
   author: spec-kit-core
   repository: https://github.com/github/spec-kit
   license: MIT
@@ -19,10 +19,10 @@ provides:
   commands:
     - name: speckit.git.feature
       file: commands/speckit.git.feature.md
-      description: "Create a feature branch with sequential or timestamp numbering"
+      description: "Allocate a feature ID without creating a git branch"
     - name: speckit.git.validate
       file: commands/speckit.git.validate.md
-      description: "Validate current branch follows feature branch naming conventions"
+      description: "Validate current branch against the repository branch policy"
     - name: speckit.git.remote
       file: commands/speckit.git.remote.md
       description: "Detect Git remote URL for GitHub integration"
@@ -36,7 +36,7 @@ provides:
   config:
     - name: "git-config.yml"
       template: "config-template.yml"
-      description: "Git branching configuration"
+      description: "Git workflow configuration"
       required: false
 
 hooks:
@@ -45,9 +45,9 @@ hooks:
     optional: false
     description: "Initialize Git repository before constitution setup"
   before_specify:
-    command: speckit.git.feature
+    command: speckit.git.validate
     optional: false
-    description: "Create feature branch before specification"
+    description: "Validate collaborative branch before specification"
   before_clarify:
     command: speckit.git.commit
     optional: true
@@ -131,8 +131,8 @@ hooks:
 
 tags:
   - "git"
-  - "branching"
   - "workflow"
+  - "collaboration"
 
 config:
   defaults:

@@ -47,16 +47,16 @@ get_repo_root() {
 
 # Get current branch, with fallback for non-git repositories
 get_current_branch() {
-    # First check if SPECIFY_FEATURE environment variable is set
-    if [[ -n "${SPECIFY_FEATURE:-}" ]]; then
-        echo "$SPECIFY_FEATURE"
-        return
-    fi
-
-    # Then check git if available at the spec-kit root (not parent)
+    # Prefer the real git branch for collaborative-branch repositories.
     local repo_root=$(get_repo_root)
     if has_git; then
         git -C "$repo_root" rev-parse --abbrev-ref HEAD
+        return
+    fi
+
+    # Fall back to SPECIFY_FEATURE only when git is unavailable.
+    if [[ -n "${SPECIFY_FEATURE:-}" ]]; then
+        echo "$SPECIFY_FEATURE"
         return
     fi
 
@@ -125,6 +125,17 @@ spec_kit_effective_branch_name() {
     fi
 }
 
+is_allowed_collaborative_branch() {
+    case "$1" in
+        main|front-end|back-end)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 check_feature_branch() {
     local raw="$1"
     local has_git_repo="$2"
@@ -138,19 +149,38 @@ check_feature_branch() {
     local branch
     branch=$(spec_kit_effective_branch_name "$raw")
 
-    # Accept sequential prefix (3+ digits) but exclude malformed timestamps
-    # Malformed: 7-or-8 digit date + 6-digit time with no trailing slug (e.g. "2026031-143022" or "20260319-143022")
-    local is_sequential=false
-    if [[ "$branch" =~ ^[0-9]{3,}- ]] && [[ ! "$branch" =~ ^[0-9]{7}-[0-9]{6}- ]] && [[ ! "$branch" =~ ^[0-9]{7,8}-[0-9]{6}$ ]]; then
-        is_sequential=true
-    fi
-    if [[ "$is_sequential" != "true" ]] && [[ ! "$branch" =~ ^[0-9]{8}-[0-9]{6}- ]]; then
-        echo "ERROR: Not on a feature branch. Current branch: $raw" >&2
-        echo "Feature branches should be named like: 001-feature-name, 1234-feature-name, or 20260319-143022-feature-name" >&2
+    if ! is_allowed_collaborative_branch "$branch"; then
+        echo "ERROR: Not on an allowed collaborative branch. Current branch: $raw" >&2
+        echo "Allowed branches are: main, front-end, back-end" >&2
         return 1
     fi
 
     return 0
+}
+
+find_single_feature_dir() {
+    local specs_dir="$1"
+    local matches=()
+
+    if [[ -d "$specs_dir" ]]; then
+        for dir in "$specs_dir"/*; do
+            [[ -d "$dir" ]] || continue
+            matches+=("$(basename "$dir")")
+        done
+    fi
+
+    if [[ ${#matches[@]} -eq 1 ]]; then
+        echo "$specs_dir/${matches[0]}"
+        return 0
+    fi
+
+    if [[ ${#matches[@]} -eq 0 ]]; then
+        echo "ERROR: No feature directory is selected. Run /speckit.specify first or set SPECIFY_FEATURE_DIRECTORY." >&2
+        return 1
+    fi
+
+    echo "ERROR: Multiple spec directories exist on a collaborative branch. Set SPECIFY_FEATURE_DIRECTORY or update .specify/feature.json." >&2
+    return 1
 }
 
 # Find feature directory by numeric prefix instead of exact branch match
@@ -160,6 +190,11 @@ find_feature_dir_by_prefix() {
     local branch_name
     branch_name=$(spec_kit_effective_branch_name "$2")
     local specs_dir="$repo_root/specs"
+
+    if is_allowed_collaborative_branch "$branch_name"; then
+        find_single_feature_dir "$specs_dir"
+        return
+    fi
 
     # Extract prefix from branch (e.g., "004" from "004-whatever" or "20260319-143022" from timestamp branches)
     local prefix=""
@@ -372,4 +407,3 @@ except Exception:
     # Callers running under set -e should use: TEMPLATE=$(resolve_template ...) || true
     return 1
 }
-

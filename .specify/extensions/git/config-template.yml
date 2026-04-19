@@ -1,7 +1,8 @@
-# Git Branching Workflow Extension Configuration
+# Git Workflow Extension Configuration
 # Copied to .specify/extensions/git/git-config.yml on install
 
-# Branch numbering strategy: "sequential" (001, 002, ...) or "timestamp" (YYYYMMDD-HHMMSS)
+# Feature ID numbering strategy: "sequential" (001, 002, ...) or "timestamp" (YYYYMMDD-HHMMSS)
+# Git branches themselves are limited to: main, front-end, back-end
 branch_numbering: sequential
 
 # Commit message used by `git commit` during repository initialization

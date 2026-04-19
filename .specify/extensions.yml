@@ -12,11 +12,11 @@ hooks:
     condition: null
   before_specify:
   - extension: git
-    command: speckit.git.feature
+    command: speckit.git.validate
     enabled: true
     optional: false
-    prompt: Execute speckit.git.feature?
-    description: Create feature branch before specification
+    prompt: Execute speckit.git.validate?
+    description: Validate collaborative branch before specification
     condition: null
   before_clarify:
   - extension: git

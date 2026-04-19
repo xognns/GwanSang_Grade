@@ -1,14 +1,15 @@
-# Git Branching Workflow Extension
+# Git Workflow Extension
 
-Git repository initialization, feature branch creation, numbering (sequential/timestamp), validation, remote detection, and auto-commit for Spec Kit.
+Git repository initialization, collaborative branch validation, feature ID
+allocation under `specs/`, remote detection, and auto-commit for Spec Kit.
 
 ## Overview
 
 This extension provides Git operations as an optional, self-contained module. It manages:
 
 - **Repository initialization** with configurable commit messages
-- **Feature branch creation** with sequential (`001-feature-name`) or timestamp (`20260319-143022-feature-name`) numbering
-- **Branch validation** to ensure branches follow naming conventions
+- **Feature ID allocation** with sequential (`001-feature-name`) or timestamp (`20260319-143022-feature-name`) numbering under `specs/`
+- **Branch validation** to ensure work stays on `main`, `front-end`, or `back-end`
 - **Git remote detection** for GitHub integration (e.g., issue creation)
 - **Auto-commit** after core commands (configurable per-command with custom messages)
 
@@ -17,8 +18,8 @@ This extension provides Git operations as an optional, self-contained module. It
 | Command | Description |
 |---------|-------------|
 | `speckit.git.initialize` | Initialize a Git repository with a configurable commit message |
-| `speckit.git.feature` | Create a feature branch with sequential or timestamp numbering |
-| `speckit.git.validate` | Validate current branch follows feature branch naming conventions |
+| `speckit.git.feature` | Allocate a feature ID without creating a git branch |
+| `speckit.git.validate` | Validate the current collaborative branch |
 | `speckit.git.remote` | Detect Git remote URL for GitHub integration |
 | `speckit.git.commit` | Auto-commit changes (configurable per-command enable/disable and messages) |
 
@@ -27,7 +28,7 @@ This extension provides Git operations as an optional, self-contained module. It
 | Event | Command | Optional | Description |
 |-------|---------|----------|-------------|
 | `before_constitution` | `speckit.git.initialize` | No | Init git repo before constitution |
-| `before_specify` | `speckit.git.feature` | No | Create feature branch before specification |
+| `before_specify` | `speckit.git.validate` | No | Validate collaborative branch before specification |
 | `before_clarify` | `speckit.git.commit` | Yes | Commit outstanding changes before clarification |
 | `before_plan` | `speckit.git.commit` | Yes | Commit outstanding changes before planning |
 | `before_tasks` | `speckit.git.commit` | Yes | Commit outstanding changes before task generation |
@@ -50,7 +51,7 @@ This extension provides Git operations as an optional, self-contained module. It
 Configuration is stored in `.specify/extensions/git/git-config.yml`:
 
 ```yaml
-# Branch numbering strategy: "sequential" or "timestamp"
+# Feature ID numbering strategy: "sequential" or "timestamp"
 branch_numbering: sequential
 
 # Custom commit message for git init
@@ -75,7 +76,7 @@ specify extension add git
 ## Disabling
 
 ```bash
-# Disable the git extension (spec creation continues without branching)
+# Disable the git extension (spec creation continues without branch validation)
 specify extension disable git
 
 # Re-enable it
@@ -86,7 +87,7 @@ specify extension enable git
 
 When Git is not installed or the directory is not a Git repository:
 - Spec directories are still created under `specs/`
-- Branch creation is skipped with a warning
+- Git branch validation is skipped with a warning
 - Branch validation is skipped with a warning
 - Remote detection returns empty results
 

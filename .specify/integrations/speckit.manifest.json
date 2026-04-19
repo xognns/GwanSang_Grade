@@ -3,14 +3,14 @@
   "version": "0.7.4.dev0",
   "installed_at": "2026-04-19T12:20:23.959042+00:00",
   "files": {
-    ".specify/scripts/bash/common.sh": "2b767a5c97d0c8c8f0a868aaa2114f170adfb1921749f4e58675da91382defb7",
+    ".specify/scripts/bash/common.sh": "95cefa81b3cd9aea53c689c1dbb499219fba993e734bcad251bd26f39dc37975",
     ".specify/scripts/bash/check-prerequisites.sh": "aff361639c504b95a2901493f5022788adc01a6792fd37f132de8f57782e4b80",
-    ".specify/scripts/bash/create-new-feature.sh": "3439519f72ce6f88fcd4dcd27346de0c9ffe211c927b1319db42850282f02456",
-    ".specify/scripts/bash/setup-plan.sh": "bcaa0ccbf45b7d9ea9bff04006500d7eb28a2bdf82bcc819986b21e5294bf76c",
+    ".specify/scripts/bash/create-new-feature.sh": "4c5da61cc271a8ddda0c0ffb8ccf7ec635caaccface8a578fe0d6ed54e255b34",
+    ".specify/scripts/bash/setup-plan.sh": "e5e4a998735f7119037836649c007d11c2bf07eebba6cbe32f9a310022e65662",
     ".specify/templates/constitution-template.md": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
-    ".specify/templates/tasks-template.md": "5da92ac1fbf5be2f9018a5064497995bf3592761ccb6b3951503c63d851297e8",
+    ".specify/templates/tasks-template.md": "916831e27d6e2bdc763a481ac3270b5c951ad34879688731e1209d667e8ddcf0",
     ".specify/templates/checklist-template.md": "312eee8291dfa984b21f95ddd0ca778e7a1f0b3a64bfc470d79762a3e3f5d7b8",
-    ".specify/templates/plan-template.md": "873e84b226fe3d24afe28046931b20db9bbb9210366428dc958a515349ed6e68",
-    ".specify/templates/spec-template.md": "785dc50d856dd92d6515eca0761e16dce0c9ba0a3cd07154fd33eae77932422a"
+    ".specify/templates/plan-template.md": "51da20eff612ca18d2b4444a5640599a35e8b1205e3370e748761aa5aa016391",
+    ".specify/templates/spec-template.md": "3fe64e184616c174810d19eef272dc61fdd6252f9e44a5453fadbefcc8da0d4a"
   }
 }

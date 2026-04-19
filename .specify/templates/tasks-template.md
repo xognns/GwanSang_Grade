@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are MANDATORY. Every user story MUST start with failing tests for the affected layer(s) before implementation tasks are listed.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -20,10 +20,10 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Front-end**: `frontend/src/`, `frontend/tests/`
+- **Back-end**: `backend/src/` or `backend/app/`, `backend/tests/`
+- **Contracts & Specs**: `Docs/`
+- Paths shown below assume the React/FastAPI split mandated by the constitution
 
 <!-- 
   ============================================================================
@@ -48,9 +48,10 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Create or align `frontend/`, `backend/`, and `Docs/` structure per implementation plan
+- [ ] T002 Initialize front-end and back-end dependencies for the chosen scope
+- [ ] T003 [P] Configure linting, formatting, and test runners for each affected layer
+- [ ] T004 [P] Configure CI jobs for lint, test, build, and documentation sync checks
 
 ---
 
@@ -62,12 +63,11 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T005 Define or update API contracts and schemas in `Docs/`
+- [ ] T006 [P] Establish frontend API boundary and request client structure in `frontend/src/`
+- [ ] T007 [P] Establish FastAPI routing, service, and test harness structure in `backend/`
+- [ ] T008 [P] Create shared fixtures or mock payloads derived from `Docs/`
+- [ ] T009 Configure error handling, logging, and environment management for the affected layer(s)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -79,21 +79,21 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (MANDATORY) ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Add backend contract or API test in `backend/tests/contract/`
+- [ ] T011 [P] [US1] Add frontend user-flow test in `frontend/tests/`
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T012 [US1] Update `Docs/` contract files, examples, and error cases for the story
+- [ ] T013 [P] [US1] Implement frontend changes in `frontend/src/`
+- [ ] T014 [P] [US1] Implement backend changes in `backend/src/` or `backend/app/`
+- [ ] T015 [US1] Wire documented request/response handling across the boundary
 - [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T017 [US1] Verify CI commands for this story's scope
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -105,17 +105,17 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (MANDATORY) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T018 [P] [US2] Add backend contract or API test in `backend/tests/contract/`
+- [ ] T019 [P] [US2] Add frontend user-flow test in `frontend/tests/`
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T020 [US2] Update `Docs/` contract files, examples, and edge cases for the story
+- [ ] T021 [P] [US2] Implement frontend changes in `frontend/src/`
+- [ ] T022 [P] [US2] Implement backend changes in `backend/src/` or `backend/app/`
+- [ ] T023 [US2] Integrate only through documented contracts and shared fixtures
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -127,16 +127,17 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (MANDATORY) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T024 [P] [US3] Add backend contract or API test in `backend/tests/contract/`
+- [ ] T025 [P] [US3] Add frontend user-flow test in `frontend/tests/`
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T026 [US3] Update `Docs/` contract files, examples, and edge cases for the story
+- [ ] T027 [P] [US3] Implement frontend changes in `frontend/src/`
+- [ ] T028 [P] [US3] Implement backend changes in `backend/src/` or `backend/app/`
+- [ ] T029 [US3] Verify CI commands and documented boundary behavior
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -150,10 +151,10 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Documentation updates in `Docs/`
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
+- [ ] TXXX [P] Additional unit tests in `frontend/tests/` or `backend/tests/`
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
 
@@ -178,9 +179,9 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
-- Models before services
-- Services before endpoints
+- Tests MUST be written and FAIL before implementation
+- `Docs/` contract updates MUST happen before cross-layer integration work
+- Front-end and Back-end tasks MUST stay in their own file sets
 - Core implementation before integration
 - Story complete before moving to next priority
 
@@ -188,10 +189,10 @@ Examples of foundational tasks (adjust based on your project):
 
 - All Setup tasks marked [P] can run in parallel
 - All Foundational tasks marked [P] can run in parallel (within Phase 2)
-- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
+- Once Foundational phase completes, user stories can start in parallel if file ownership and contract changes do not conflict
 - All tests for a user story marked [P] can run in parallel
-- Models within a story marked [P] can run in parallel
-- Different user stories can be worked on in parallel by different team members
+- Front-end and Back-end implementation within a story can run in parallel after `Docs/` updates land
+- Different user stories can be worked on in parallel by different team members on the allowed collaborative branches
 
 ---
 
@@ -199,12 +200,12 @@ Examples of foundational tasks (adjust based on your project):
 
 ```bash
 # Launch all tests for User Story 1 together (if tests requested):
-Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
-Task: "Integration test for [user journey] in tests/integration/test_[name].py"
+Task: "Add backend contract or API test in backend/tests/contract/"
+Task: "Add frontend user-flow test in frontend/tests/"
 
-# Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in src/models/[entity1].py"
-Task: "Create [Entity2] model in src/models/[entity2].py"
+# Once Docs updates are done, implement both sides in parallel:
+Task: "Implement frontend changes in frontend/src/"
+Task: "Implement backend changes in backend/src/ or backend/app/"
 ```
 
 ---
@@ -233,9 +234,9 @@ With multiple developers:
 
 1. Team completes Setup + Foundational together
 2. Once Foundational is done:
-   - Developer A: User Story 1
-   - Developer B: User Story 2
-   - Developer C: User Story 3
+   - Developer A: Front-end scope for User Story 1
+   - Developer B: Back-end scope for User Story 1
+   - Developer C: Next prioritized story after contract alignment
 3. Stories complete and integrate independently
 
 ---

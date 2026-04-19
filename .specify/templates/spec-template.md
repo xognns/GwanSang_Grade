@@ -1,8 +1,10 @@
 # Feature Specification: [FEATURE NAME]
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
+**Feature ID**: `[###-feature-name]`
+**Working Branch**: `[main|front-end|back-end]`
+**Affected Area**: `[Front-end | Back-end | Both]`
+**Created**: [DATE]
+**Status**: Draft
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -11,7 +13,10 @@
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
+  This project follows TDD as a non-negotiable rule.
+  Acceptance scenarios must be concrete enough to become failing tests before implementation begins.
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -99,6 +104,14 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Contract & Documentation Impact *(mandatory)*
+
+- **Docs Updates**: [List `Docs/` files to create or update, or write `None` with rationale]
+- **API Contract Changes**: [Describe request/response/error changes, or write `None`]
+- **Frontend Impact**: [Describe UI/client changes, or write `None`]
+- **Backend Impact**: [Describe FastAPI/service/data changes, or write `None`]
+- **Separation Guarantee**: [Explain how frontend/backend remain decoupled and communicate only through documented contracts]
 
 ## Success Criteria *(mandatory)*
 

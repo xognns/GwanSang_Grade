@@ -64,21 +64,21 @@ while [ $i -le $# ]; do
             echo ""
             echo "Options:"
             echo "  --json              Output in JSON format"
-            echo "  --dry-run           Compute branch name without creating the branch"
-            echo "  --allow-existing-branch  Switch to branch if it already exists instead of failing"
-            echo "  --short-name <name> Provide a custom short name (2-4 words) for the branch"
-            echo "  --number N          Specify branch number manually (overrides auto-detection)"
+            echo "  --dry-run           Compute feature ID without creating directories or files"
+            echo "  --allow-existing-branch  Retained for compatibility; ignored in this repository"
+            echo "  --short-name <name> Provide a custom short name (2-4 words) for the feature ID"
+            echo "  --number N          Specify feature number manually (overrides auto-detection)"
             echo "  --timestamp         Use timestamp prefix (YYYYMMDD-HHMMSS) instead of sequential numbering"
             echo "  --help, -h          Show this help message"
             echo ""
             echo "Environment variables:"
-            echo "  GIT_BRANCH_NAME     Use this exact branch name, bypassing all prefix/suffix generation"
+            echo "  GIT_BRANCH_NAME     Use this exact feature ID, bypassing all prefix/suffix generation"
             echo ""
             echo "Examples:"
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
             echo "  $0 'Implement OAuth2 integration for API' --number 5"
             echo "  $0 --timestamp --short-name 'user-auth' 'Add user authentication'"
-            echo "  GIT_BRANCH_NAME=my-branch $0 'feature description'"
+            echo "  GIT_BRANCH_NAME=001-user-auth $0 'feature description'"
             exit 0
             ;;
         *)
@@ -262,6 +262,34 @@ fi
 cd "$REPO_ROOT"
 
 SPECS_DIR="$REPO_ROOT/specs"
+FEATURE_CONTEXT_FILE="$REPO_ROOT/.specify/feature.json"
+
+ACTIVE_BRANCH="main"
+if [ "$HAS_GIT" = true ]; then
+    ACTIVE_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+    if [ -z "$ACTIVE_BRANCH" ]; then
+        echo "Error: Could not determine the current git branch." >&2
+        exit 1
+    fi
+    check_feature_branch "$ACTIVE_BRANCH" "true" || exit 1
+fi
+
+persist_feature_context() {
+    local feature_dir_rel="specs/$BRANCH_NAME"
+
+    mkdir -p "$REPO_ROOT/.specify"
+    if command -v jq >/dev/null 2>&1; then
+        jq -cn \
+            --arg branch "$ACTIVE_BRANCH" \
+            --arg feature "$BRANCH_NAME" \
+            --arg feature_dir "$feature_dir_rel" \
+            '{branch:$branch,feature:$feature,feature_directory:$feature_dir}' \
+            > "$FEATURE_CONTEXT_FILE"
+    else
+        printf '{\n  "branch": "%s",\n  "feature": "%s",\n  "feature_directory": "%s"\n}\n' \
+            "$ACTIVE_BRANCH" "$BRANCH_NAME" "$feature_dir_rel" > "$FEATURE_CONTEXT_FILE"
+    fi
+}
 
 # Function to generate branch name with stop word filtering
 generate_branch_name() {
@@ -302,7 +330,7 @@ generate_branch_name() {
     fi
 }
 
-# Check for GIT_BRANCH_NAME env var override (exact branch name, no prefix/suffix)
+# Check for GIT_BRANCH_NAME env var override (exact feature ID, no prefix/suffix)
 if [ -n "${GIT_BRANCH_NAME:-}" ]; then
     BRANCH_NAME="$GIT_BRANCH_NAME"
     # Extract FEATURE_NUM from the branch name if it starts with a numeric prefix
@@ -318,7 +346,7 @@ if [ -n "${GIT_BRANCH_NAME:-}" ]; then
         BRANCH_SUFFIX="$BRANCH_NAME"
     fi
 else
-    # Generate branch name
+    # Generate feature ID
     if [ -n "$SHORT_NAME" ]; then
         BRANCH_SUFFIX=$(clean_branch_name "$SHORT_NAME")
     else
@@ -331,7 +359,7 @@ else
         BRANCH_NUMBER=""
     fi
 
-    # Determine branch prefix
+    # Determine feature ID prefix
     if [ "$USE_TIMESTAMP" = true ]; then
         FEATURE_NUM=$(date +%Y%m%d-%H%M%S)
         BRANCH_NAME="${FEATURE_NUM}-${BRANCH_SUFFIX}"
@@ -355,7 +383,7 @@ else
     fi
 fi
 
-# GitHub enforces a 244-byte limit on branch names
+# GitHub enforces a 244-byte limit on ref names; keep feature IDs within the same bound
 MAX_BRANCH_LENGTH=244
 _byte_length() { printf '%s' "$1" | LC_ALL=C wc -c | tr -d ' '; }
 BRANCH_BYTE_LEN=$(_byte_length "$BRANCH_NAME")
@@ -372,49 +400,36 @@ elif [ "$BRANCH_BYTE_LEN" -gt $MAX_BRANCH_LENGTH ]; then
     ORIGINAL_BRANCH_NAME="$BRANCH_NAME"
     BRANCH_NAME="${FEATURE_NUM}-${TRUNCATED_SUFFIX}"
 
-    >&2 echo "[specify] Warning: Branch name exceeded GitHub's 244-byte limit"
+    >&2 echo "[specify] Warning: Feature ID exceeded the 244-byte compatibility limit"
     >&2 echo "[specify] Original: $ORIGINAL_BRANCH_NAME (${#ORIGINAL_BRANCH_NAME} bytes)"
     >&2 echo "[specify] Truncated to: $BRANCH_NAME (${#BRANCH_NAME} bytes)"
 fi
 
+FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
+SPEC_FILE="$FEATURE_DIR/spec.md"
+
 if [ "$DRY_RUN" != true ]; then
     if [ "$HAS_GIT" = true ]; then
-        branch_create_error=""
-        if ! branch_create_error=$(git checkout -q -b "$BRANCH_NAME" 2>&1); then
-            current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
-            if git branch --list "$BRANCH_NAME" | grep -q .; then
-                if [ "$ALLOW_EXISTING" = true ]; then
-                    if [ "$current_branch" = "$BRANCH_NAME" ]; then
-                        :
-                    elif ! switch_branch_error=$(git checkout -q "$BRANCH_NAME" 2>&1); then
-                        >&2 echo "Error: Failed to switch to existing branch '$BRANCH_NAME'. Please resolve any local changes or conflicts and try again."
-                        if [ -n "$switch_branch_error" ]; then
-                            >&2 printf '%s\n' "$switch_branch_error"
-                        fi
-                        exit 1
-                    fi
-                elif [ "$USE_TIMESTAMP" = true ]; then
-                    >&2 echo "Error: Branch '$BRANCH_NAME' already exists. Rerun to get a new timestamp or use a different --short-name."
-                    exit 1
-                else
-                    >&2 echo "Error: Branch '$BRANCH_NAME' already exists. Please use a different feature name or specify a different number with --number."
-                    exit 1
-                fi
-            else
-                >&2 echo "Error: Failed to create git branch '$BRANCH_NAME'."
-                if [ -n "$branch_create_error" ]; then
-                    >&2 printf '%s\n' "$branch_create_error"
-                else
-                    >&2 echo "Please check your git configuration and try again."
-                fi
-                exit 1
-            fi
-        fi
+        >&2 echo "[specify] Using collaborative branch '$ACTIVE_BRANCH'; skipped git branch creation"
     else
-        >&2 echo "[specify] Warning: Git repository not detected; skipped branch creation for $BRANCH_NAME"
+        >&2 echo "[specify] Warning: Git repository not detected; using logical feature ID '$BRANCH_NAME' only"
     fi
 
-    printf '# To persist: export SPECIFY_FEATURE=%q\n' "$BRANCH_NAME" >&2
+    mkdir -p "$FEATURE_DIR"
+
+    if [ ! -f "$SPEC_FILE" ]; then
+        TEMPLATE=$(resolve_template "spec-template" "$REPO_ROOT") || true
+        if [ -n "$TEMPLATE" ] && [ -f "$TEMPLATE" ]; then
+            cp "$TEMPLATE" "$SPEC_FILE"
+        else
+            echo "Warning: Spec template not found; created empty spec file" >&2
+            touch "$SPEC_FILE"
+        fi
+    fi
+
+    persist_feature_context
+    printf '# Active branch: %q\n' "$ACTIVE_BRANCH" >&2
+    printf '# Feature directory pinned in .specify/feature.json: %q\n' "specs/$BRANCH_NAME" >&2
 fi
 
 if $JSON_MODE; then
@@ -422,32 +437,39 @@ if $JSON_MODE; then
         if [ "$DRY_RUN" = true ]; then
             jq -cn \
                 --arg branch_name "$BRANCH_NAME" \
+                --arg active_branch "$ACTIVE_BRANCH" \
+                --arg spec_file "$SPEC_FILE" \
                 --arg feature_num "$FEATURE_NUM" \
-                '{BRANCH_NAME:$branch_name,FEATURE_NUM:$feature_num,DRY_RUN:true}'
+                '{BRANCH_NAME:$branch_name,ACTIVE_BRANCH:$active_branch,SPEC_FILE:$spec_file,FEATURE_NUM:$feature_num,DRY_RUN:true}'
         else
             jq -cn \
                 --arg branch_name "$BRANCH_NAME" \
+                --arg active_branch "$ACTIVE_BRANCH" \
+                --arg spec_file "$SPEC_FILE" \
                 --arg feature_num "$FEATURE_NUM" \
-                '{BRANCH_NAME:$branch_name,FEATURE_NUM:$feature_num}'
+                '{BRANCH_NAME:$branch_name,ACTIVE_BRANCH:$active_branch,SPEC_FILE:$spec_file,FEATURE_NUM:$feature_num}'
         fi
     else
         if type json_escape >/dev/null 2>&1; then
             _je_branch=$(json_escape "$BRANCH_NAME")
+            _je_active=$(json_escape "$ACTIVE_BRANCH")
+            _je_spec=$(json_escape "$SPEC_FILE")
             _je_num=$(json_escape "$FEATURE_NUM")
         else
             _je_branch="$BRANCH_NAME"
+            _je_active="$ACTIVE_BRANCH"
+            _je_spec="$SPEC_FILE"
             _je_num="$FEATURE_NUM"
         fi
         if [ "$DRY_RUN" = true ]; then
-            printf '{"BRANCH_NAME":"%s","FEATURE_NUM":"%s","DRY_RUN":true}\n' "$_je_branch" "$_je_num"
+            printf '{"BRANCH_NAME":"%s","ACTIVE_BRANCH":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s","DRY_RUN":true}\n' "$_je_branch" "$_je_active" "$_je_spec" "$_je_num"
         else
-            printf '{"BRANCH_NAME":"%s","FEATURE_NUM":"%s"}\n' "$_je_branch" "$_je_num"
+            printf '{"BRANCH_NAME":"%s","ACTIVE_BRANCH":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s"}\n' "$_je_branch" "$_je_active" "$_je_spec" "$_je_num"
         fi
     fi
 else
     echo "BRANCH_NAME: $BRANCH_NAME"
+    echo "ACTIVE_BRANCH: $ACTIVE_BRANCH"
+    echo "SPEC_FILE: $SPEC_FILE"
     echo "FEATURE_NUM: $FEATURE_NUM"
-    if [ "$DRY_RUN" != true ]; then
-        printf '# To persist in your shell: export SPECIFY_FEATURE=%q\n' "$BRANCH_NAME"
-    fi
 fi
