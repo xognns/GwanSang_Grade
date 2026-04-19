@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import cv2
+import numpy as np
+
 from backend.app.domain.errors import ErrorCode
 
 
@@ -25,12 +28,21 @@ def _normalize_mime(content_type: Optional[str], file_name: str) -> str:
     return lowered.rsplit(".", 1)[-1] if "." in lowered else ""
 
 
-def _estimate_face_count(file_bytes: bytes) -> int:
-    if b"NO_FACE" in file_bytes:
-        return 0
-    if b"MULTI_FACE" in file_bytes:
-        return 2
-    return 1
+def _estimate_face_count(file_bytes: bytes) -> Optional[int]:
+    image_data = np.frombuffer(file_bytes, dtype=np.uint8)
+    decoded = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+    if decoded is None:
+        return None
+
+    grayscale = cv2.cvtColor(decoded, cv2.COLOR_BGR2GRAY)
+    cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    faces = cascade.detectMultiScale(
+        grayscale,
+        scaleFactor=1.1,
+        minNeighbors=4,
+        minSize=(30, 30),
+    )
+    return len(faces)
 
 
 def validate_upload(name: str, file_name: str, file_bytes: bytes, content_type: str | None) -> ValidationFailure:
@@ -48,6 +60,9 @@ def validate_upload(name: str, file_name: str, file_bytes: bytes, content_type: 
         return ValidationFailure(False, ErrorCode.file_too_large)
 
     face_count = _estimate_face_count(file_bytes)
+    if face_count is None:
+        return ValidationFailure(False, ErrorCode.unsupported_format)
+
     if face_count == 0:
         return ValidationFailure(False, ErrorCode.no_face)
     if face_count > 1:

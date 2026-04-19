@@ -1,8 +1,14 @@
+from pathlib import Path
+
 from uuid import UUID
 
 
+def _fixture_bytes(name: str) -> bytes:
+    return (Path(__file__).resolve().parents[1] / "fixtures" / name).read_bytes()
+
+
 def test_create_analysis_success(client):
-    payload = b"\x89PNG\r\n\x1a\nvalid-image-content"
+    payload = _fixture_bytes("face_single.png")
     files = {"file": ("avatar.png", payload, "image/png")}
     response = client.post(
         "/api/v1/analyses",
@@ -30,7 +36,7 @@ def test_create_analysis_success(client):
 
 
 def test_create_analysis_multiple_faces_is_rejected(client):
-    payload = b"\x89PNG\r\n\x1a\nMULTI_FACE"
+    payload = _fixture_bytes("face_multi.png")
     files = {"file": ("avatar.png", payload, "image/png")}
     response = client.post("/api/v1/analyses", data={"name": "윤아"}, files=files)
     assert response.status_code == 422

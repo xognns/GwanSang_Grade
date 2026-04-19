@@ -1,5 +1,12 @@
+from pathlib import Path
+
+
+def _fixture_bytes(name: str) -> bytes:
+    return (Path(__file__).resolve().parents[1] / "fixtures" / name).read_bytes()
+
+
 def test_success_response_includes_share_payload_fields(client):
-    payload = b"\x89PNG\r\n\x1a\nvalid-image-content"
+    payload = _fixture_bytes("face_single.png")
     files = {"file": ("avatar.png", payload, "image/png")}
     response = client.post("/api/v1/analyses", data={"name": "하루"}, files=files)
 

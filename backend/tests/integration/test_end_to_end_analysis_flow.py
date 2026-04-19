@@ -1,5 +1,12 @@
+from pathlib import Path
+
+
+def _fixture_bytes(name: str) -> bytes:
+    return (Path(__file__).resolve().parents[1] / "fixtures" / name).read_bytes()
+
+
 def test_end_to_end_success_flow_returns_contract_payload(client):
-    payload = b"\x89PNG\r\n\x1a\nvalid-image-content"
+    payload = _fixture_bytes("face_single.png")
     files = {"file": ("avatar.png", payload, "image/png")}
     response = client.post("/api/v1/analyses", data={"name": "혜빈"}, files=files)
 
@@ -15,7 +22,7 @@ def test_end_to_end_success_flow_returns_contract_payload(client):
 
 
 def test_end_to_end_face_error_is_422_and_share_unavailable_not_default(client):
-    payload = b"\x89PNG\r\n\x1a\nNO_FACE"
+    payload = _fixture_bytes("face_none.png")
     files = {"file": ("avatar.png", payload, "image/png")}
     response = client.post("/api/v1/analyses", data={"name": "혜빈"}, files=files)
 
