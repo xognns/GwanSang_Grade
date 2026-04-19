@@ -96,7 +96,7 @@
 
 - [ ] [T047] [P] Add mobile a11y checks and focus flow in `frontend/tests/accessibility.spec.ts`
 - [ ] [T048] Add docs alignment for `docs/mvp-spec.md` and `Docs/mvp-spec.md` from finalized contract artifacts
-- [ ] [T049] Add CI validation script in `.github/workflows/ci.yml` for lint/test/build + docs sync
+- [x] [T049] Add CI validation script in `.github/workflows/ci.yml` for lint/test/build + docs sync
 - [x] [T050] [P] Add `backend/tests/integration/test_end_to_end_analysis_flow.py`
 - [ ] [T051] [P] Run `frontend/tests/e2e` and `backend/tests` with mobile-focused smoke cases
 - [ ] [T052] [P] Final review of constitutional gates in `specs/001-face-grade-mvp/plan.md`

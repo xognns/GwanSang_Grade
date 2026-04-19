@@ -31,6 +31,12 @@ paths:
                 file:
                   type: string
                   format: binary
+            examples:
+              validSingleFace:
+                summary: 단일 얼굴 이미지 분석 요청
+                value:
+                  name: 민수
+                  file: "(binary image/png)"
       responses:
         "200":
           description: Analysis completed successfully
@@ -38,24 +44,72 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AnalysisResponse"
+              examples:
+                success:
+                  summary: 기본 성공 응답
+                  value:
+                    requestId: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "민수"
+                    score: 3.7
+                    maxScore: 4.5
+                    grade: "B+"
+                    primaryTitle: "연구러"
+                    titles:
+                      - "연구러"
+                      - "꾸준함 마스터"
+                      - "집중보정러"
+                    comment: "꾸준함이 성적의 기본입니다. 재미 점수에서는 꽤 잘 버텨요."
+                    disclaimer: "본 결과는 재미를 위한 지수이며 실제 학업 성과를 평가하지 않습니다."
+                    stats:
+                      focus: 72
+                      diligence: 84
+                      execution: 66
+                      cramming: 58
+                      luck: 43
+                    sharePayload:
+                      suggestedFileName: "minsu_550e8400.png"
+                      shareTitle: "민수 성적표"
+                      shareText: "민수님의 성적은 B+입니다."
+                      imageAlt: "민수의 결과 카드 이미지"
         "400":
           description: Input validation failed before analysis
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unsupportedFormat:
+                  summary: 지원하지 않는 파일 형식
+                  value:
+                    code: "unsupported_format"
+                    message: "지원하지 않는 파일 형식입니다. jpg/jpeg 또는 png만 업로드 가능합니다."
+                    recoverable: true
         "422":
           description: Face validation failed during analysis
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                noFace:
+                  summary: 얼굴이 감지되지 않음
+                  value:
+                    code: "no_face"
+                    message: "얼굴이 감지되지 않았습니다. 얼굴이 선명하게 보이는 이미지를 다시 업로드하세요."
+                    recoverable: true
         "500":
           description: Unexpected analysis failure
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                analysisFailed:
+                  summary: 분석 예외
+                  value:
+                    code: "analysis_failed"
+                    message: "분석 과정에서 오류가 발생했습니다. 잠시 후 다시 시도하세요."
+                    recoverable: true
 components:
   schemas:
     AnalysisResponse:
