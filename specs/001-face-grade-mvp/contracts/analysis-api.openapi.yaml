@@ -1,0 +1,183 @@
+openapi: 3.1.0
+info:
+  title: Face Grade Analysis API
+  version: 0.1.0
+  summary: Analyze one face image and return a mobile-shareable entertainment grade result.
+servers:
+  - url: https://api.example.com
+    description: Production placeholder
+  - url: http://localhost:8000
+    description: Local development
+paths:
+  /api/v1/analyses:
+    post:
+      operationId: createAnalysis
+      summary: Submit a single face image for analysis
+      description: Accept one mobile-web submission and return a normalized score, grade, titles, comment, and share metadata.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - file
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "400":
+          description: Input validation failed before analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Face validation failed during analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected analysis failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    AnalysisResponse:
+      type: object
+      required:
+        - requestId
+        - name
+        - score
+        - maxScore
+        - grade
+        - primaryTitle
+        - titles
+        - comment
+        - disclaimer
+        - stats
+        - sharePayload
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        score:
+          type: number
+          minimum: 0.0
+          maximum: 4.5
+          multipleOf: 0.1
+        maxScore:
+          type: number
+          const: 4.5
+        grade:
+          type: string
+          enum:
+            - A+
+            - A0
+            - B+
+            - B0
+            - C+
+            - C0
+            - D+
+            - D0
+            - F
+        primaryTitle:
+          type: string
+        titles:
+          type: array
+          minItems: 2
+          maxItems: 3
+          items:
+            type: string
+        comment:
+          type: string
+        disclaimer:
+          type: string
+        stats:
+          $ref: "#/components/schemas/StatBreakdown"
+        sharePayload:
+          $ref: "#/components/schemas/SharePayload"
+    StatBreakdown:
+      type: object
+      required:
+        - focus
+        - diligence
+        - execution
+        - cramming
+        - luck
+      properties:
+        focus:
+          type: number
+          minimum: 0
+          maximum: 100
+        diligence:
+          type: number
+          minimum: 0
+          maximum: 100
+        execution:
+          type: number
+          minimum: 0
+          maximum: 100
+        cramming:
+          type: number
+          minimum: 0
+          maximum: 100
+        luck:
+          type: number
+          minimum: 0
+          maximum: 100
+    SharePayload:
+      type: object
+      required:
+        - suggestedFileName
+        - shareTitle
+        - shareText
+        - imageAlt
+      properties:
+        suggestedFileName:
+          type: string
+          pattern: "^[A-Za-z0-9._-]+\\.png$"
+        shareTitle:
+          type: string
+        shareText:
+          type: string
+        imageAlt:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - recoverable
+      properties:
+        code:
+          type: string
+          enum:
+            - missing_file
+            - unsupported_format
+            - file_too_large
+            - no_face
+            - multiple_faces
+            - share_unavailable
+            - analysis_failed
+        message:
+          type: string
+        recoverable:
+          type: boolean

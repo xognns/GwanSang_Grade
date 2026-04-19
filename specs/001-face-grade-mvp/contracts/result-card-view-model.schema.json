@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/result-card-view-model.schema.json",
+  "title": "ResultCardViewModel",
+  "type": "object",
+  "required": [
+    "name",
+    "scoreLabel",
+    "gradeLabel",
+    "primaryTitle",
+    "titles",
+    "comment",
+    "stats",
+    "disclaimer",
+    "actions"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "scoreLabel": {
+      "type": "string",
+      "pattern": "^[0-4]\\.[0-9] / 4\\.5$"
+    },
+    "gradeLabel": {
+      "type": "string",
+      "enum": ["A+", "A0", "B+", "B0", "C+", "C0", "D+", "D0", "F"]
+    },
+    "primaryTitle": {
+      "type": "string"
+    },
+    "titles": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "comment": {
+      "type": "string"
+    },
+    "stats": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "actions": {
+      "type": "object",
+      "required": ["downloadEnabled", "webShareEnabled"],
+      "properties": {
+        "downloadEnabled": {
+          "type": "boolean"
+        },
+        "webShareEnabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
