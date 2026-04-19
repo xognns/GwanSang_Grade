@@ -6,23 +6,23 @@
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] [T001] Create folder scaffolding `backend/app/` and `frontend/src/` structure from implementation plan
-- [ ] [T002] Add shared `.gitignore` and temp artifact ignore rules for upload/result artifacts in repo root
-- [ ] [T003] Add backend packaging and dependency baseline in `backend/requirements-dev.txt`
+- [x] [T001] Create folder scaffolding `backend/app/` and `frontend/src/` structure from implementation plan
+- [x] [T002] Add shared `.gitignore` and temp artifact ignore rules for upload/result artifacts in repo root
+- [x] [T003] Add backend packaging and dependency baseline in `backend/requirements-dev.txt`
 - [ ] [T004] Add frontend dependencies and scripts in `frontend/package.json` for React 19/Vite/Vitest/Playwright
 - [ ] [T005] [P] Configure `backend/` and `frontend/` test runners (`pytest` and `vitest`) in local config files
 - [ ] [T006] [P] Configure `frontend/.env.example` and `backend/.env.example` with API base url and media limits
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] [T007] Add docs-first API contract files in `Docs/api/analysis-api.openapi.yaml` and `Docs/schemas/result-card-view-model.schema.json`
-- [ ] [T008] [P] Add canonical example payload and error fixtures in `backend/tests/fixtures/`
-- [ ] [T009] [P] Add API boundary DTOs and validation models in `backend/app/domain/models.py`
-- [ ] [T010] [P] Add shared error response contract in `backend/app/domain/errors.py`
+- [x] [T007] Add docs-first API contract files in `Docs/api/analysis-api.openapi.yaml` and `Docs/schemas/result-card-view-model.schema.json`
+- [x] [T008] [P] Add canonical example payload and error fixtures in `backend/tests/fixtures/`
+- [x] [T009] [P] Add API boundary DTOs and validation models in `backend/app/domain/models.py`
+- [x] [T010] [P] Add shared error response contract in `backend/app/domain/errors.py`
 - [ ] [T011] [P] Establish frontend API client contracts in `frontend/src/services/api/contracts.ts`
 - [ ] [T012] [P] Create reusable parser/formatter for result-card view model in `frontend/src/services/result/model.ts`
-- [ ] [T013] Configure integration test harness for API route tests in `backend/tests/conftest.py`
-- [ ] [T014] Configure contract-focused Playwright test setup in `frontend/tests/playwright.config.ts`
+- [x] [T013] Configure integration test harness for API route tests in `backend/tests/conftest.py`
+- [x] [T014] Configure contract-focused Playwright test setup in `frontend/tests/playwright.config.ts`
 
 ## Phase 3: User Story 1 - 사진으로 성적 조회 (Priority: P1) 🎯 MVP
 
@@ -32,18 +32,18 @@
 
 ### Tests for User Story 1 (MANDATORY)
 
-- [ ] [T015] [P] [US1] Add API contract test in `backend/tests/contract/test_create_analysis_success.py`
-- [ ] [T016] [P] [US1] Add backend unit test for valid input + baseline scoring in `backend/tests/unit/test_analysis_scoring.py`
-- [ ] [T017] [P] [US1] Add frontend happy-path component test in `frontend/tests/unit/ResultView.test.tsx`
+- [x] [T015] [P] [US1] Add API contract test in `backend/tests/contract/test_create_analysis_success.py`
+- [x] [T016] [P] [US1] Add backend unit test for valid input + baseline scoring in `backend/tests/unit/test_analysis_scoring.py`
+- [x] [T017] [P] [US1] Add frontend happy-path component test in `frontend/tests/unit/ResultView.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] [T018] Update docs for success contract examples in `Docs/api/analysis-api.openapi.yaml`
-- [ ] [T019] [P] [US1] Implement multipart request schema validation in `backend/app/api/schemas.py`
-- [ ] [T020] [P] [US1] Add request handling endpoint `POST /api/v1/analyses` in `backend/app/api/analyses.py`
-- [ ] [T021] [P] [US1] Implement analysis pipeline orchestration in `backend/app/services/analysis_service.py`
-- [ ] [T022] [US1] Implement deterministic score/grade/comment synthesis in `backend/app/domain/grade_service.py`
-- [ ] [T023] [US1] Add result card API response mapper in `backend/app/services/result_mapper.py`
+- [x] [T018] Update docs for success contract examples in `Docs/api/analysis-api.openapi.yaml`
+- [x] [T019] [P] [US1] Implement multipart request schema validation in `backend/app/api/schemas.py`
+- [x] [T020] [P] [US1] Add request handling endpoint `POST /api/v1/analyses` in `backend/app/api/analyses.py`
+- [x] [T021] [P] [US1] Implement analysis pipeline orchestration in `backend/app/services/analysis_service.py`
+- [x] [T022] [US1] Implement deterministic score/grade/comment synthesis in `backend/app/domain/grade_service.py`
+- [x] [T023] [US1] Add result card API response mapper in `backend/app/services/result_mapper.py`
 - [ ] [T024] [US1] Build desktop/mobile input UI flow in `frontend/src/pages/MainPage.tsx`
 - [ ] [T025] [P] [US1] Add result view card render and state handling in `frontend/src/pages/ResultPage.tsx`
 - [ ] [T026] [US1] Wire API client request from UI in `frontend/src/services/api/analysisClient.ts`
@@ -57,19 +57,19 @@
 
 ### Tests for User Story 2 (MANDATORY)
 
-- [ ] [T028] [P] [US2] Add backend API test for invalid formats and face-count failures in `backend/tests/contract/test_create_analysis_failures.py`
+- [x] [T028] [P] [US2] Add backend API test for invalid formats and face-count failures in `backend/tests/contract/test_create_analysis_failures.py`
 - [ ] [T029] [P] [US2] Add frontend error-banner/component tests in `frontend/tests/unit/ErrorState.test.tsx`
 - [ ] [T030] [US2] Add edge-case e2e test for missing name/photo in `frontend/tests/e2e/us2-invalid-input.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] [T031] [US2] Add explicit validation failure branching and error codes in `backend/app/services/validation_service.py`
-- [ ] [T032] [US2] Extend schema error response to include recoverable messages in `backend/app/domain/errors.py`
-- [ ] [T033] [US2] Add shared `ErrorResponse` fixture in `backend/tests/fixtures/error_cases.json`
+- [x] [T031] [US2] Add explicit validation failure branching and error codes in `backend/app/services/validation_service.py`
+- [x] [T032] [US2] Extend schema error response to include recoverable messages in `backend/app/domain/errors.py`
+- [x] [T033] [US2] Add shared `ErrorResponse` fixture in `backend/tests/fixtures/error_cases.json`
 - [ ] [T034] [US2] Add reusable error mapping utility in `frontend/src/services/error/errorMapper.ts`
 - [ ] [T035] [US2] Implement invalid input precheck and disabled submit control in `frontend/src/components/SubmissionForm.tsx`
 - [ ] [T036] [US2] Add recoverable retry CTA and copy in `frontend/src/components/RetryPrompt.tsx`
-- [ ] [T037] [US2] Sync failure contract references in `Docs/api/analysis-api.openapi.yaml`
+- [x] [T037] [US2] Sync failure contract references in `Docs/api/analysis-api.openapi.yaml`
 
 ## Phase 5: User Story 3 - 결과 저장과 공유 (Priority: P3)
 
@@ -80,12 +80,12 @@
 ### Tests for User Story 3 (MANDATORY)
 
 - [ ] [T038] [P] [US3] Add frontend unit test for result actions in `frontend/tests/unit/ResultActions.test.tsx`
-- [ ] [T039] [P] [US3] Add backend contract test for share payload field presence in `backend/tests/contract/test_share_payload.py`
+- [x] [T039] [P] [US3] Add backend contract test for share payload field presence in `backend/tests/contract/test_share_payload.py`
 - [ ] [T040] [US3] Add mobile-share e2e smoke for fallback behavior in `frontend/tests/e2e/us3-share-fallback.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] [T041] [US3] Generate share payload metadata in `backend/app/domain/models.py` and `backend/app/services/result_mapper.py`
+- [x] [T041] [US3] Generate share payload metadata in `backend/app/domain/models.py` and `backend/app/services/result_mapper.py`
 - [ ] [T042] [US3] Add result-card export utility in `frontend/src/services/result/cardRenderer.ts`
 - [ ] [T043] [US3] Add download action and file name policy in `frontend/src/services/result/actions.ts`
 - [ ] [T044] [US3] Add Web Share API + capability detection fallback in `frontend/src/hooks/useShareResult.ts`
@@ -97,7 +97,7 @@
 - [ ] [T047] [P] Add mobile a11y checks and focus flow in `frontend/tests/accessibility.spec.ts`
 - [ ] [T048] Add docs alignment for `docs/mvp-spec.md` and `Docs/mvp-spec.md` from finalized contract artifacts
 - [ ] [T049] Add CI validation script in `.github/workflows/ci.yml` for lint/test/build + docs sync
-- [ ] [T050] [P] Add `backend/tests/integration/test_end_to_end_analysis_flow.py`
+- [x] [T050] [P] Add `backend/tests/integration/test_end_to_end_analysis_flow.py`
 - [ ] [T051] [P] Run `frontend/tests/e2e` and `backend/tests` with mobile-focused smoke cases
 - [ ] [T052] [P] Final review of constitutional gates in `specs/001-face-grade-mvp/plan.md`
 

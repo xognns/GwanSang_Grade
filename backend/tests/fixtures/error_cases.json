@@ -1,0 +1,27 @@
+[
+  {
+    "code": "missing_file",
+    "message": "사진 파일이 없습니다.",
+    "recoverable": true
+  },
+  {
+    "code": "unsupported_format",
+    "message": "지원하지 않는 파일 형식입니다. jpg/jpeg 또는 png만 업로드 가능합니다.",
+    "recoverable": true
+  },
+  {
+    "code": "file_too_large",
+    "message": "사진 파일이 너무 큽니다. 10MB 이하를 업로드하세요.",
+    "recoverable": true
+  },
+  {
+    "code": "no_face",
+    "message": "얼굴이 감지되지 않았습니다. 얼굴이 선명하게 보이는 이미지를 다시 업로드하세요.",
+    "recoverable": true
+  },
+  {
+    "code": "multiple_faces",
+    "message": "한 장면에 한 사람만 있어야 합니다. 얼굴이 하나만 보이도록 촬영/크롭해주세요.",
+    "recoverable": true
+  }
+]
