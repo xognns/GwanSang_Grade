@@ -50,6 +50,7 @@
 4. 서버가 얼굴 검출, 랜드마크 추출, feature 계산, 점수 환산을 수행한다.
 5. 결과 화면에 사진, 점수, 등급, 코멘트, 칭호를 표시한다.
 6. 사용자는 `다운로드` 또는 `인스타그램 스토리 공유`를 선택하고 흐름을 종료한다.
+7. 동일한 사진 재조회는 별도 단계로 두지 않는다.
 
 ## 4. 화면 명세
 
@@ -363,7 +364,7 @@ comment = random.choice(comment_pool.get(primary_title, [
 
 ## 7. API 명세
 
-### POST `/analyze`
+### POST `/api/v1/analyses`
 
 요청:
 
@@ -378,10 +379,13 @@ comment = random.choice(comment_pool.get(primary_title, [
 
 ```json
 {
+  "requestId": "550e8400-e29b-41d4-a716-446655440000",
   "name": "홍길동",
   "score": 3.7,
   "maxScore": 4.5,
   "grade": "B+",
+  "primaryTitle": "연구러",
+  "titles": ["연구러", "시험운 강한 상"],
   "stats": {
     "focus": 72.1,
     "diligence": 80.4,
@@ -389,17 +393,24 @@ comment = random.choice(comment_pool.get(primary_title, [
     "cramming": 55.0,
     "luck": 82.3
   },
-  "titles": ["모범생 상", "시험운 강한 상"],
   "comment": "평소 꾸준함이 강하고 실전 운도 따라주는 안정형",
-  "imageUrl": "/temp/result/abc123.jpg"
+  "disclaimer": "본 결과는 재미를 위한 지수이며 실제 학업 성과를 평가하지 않습니다.",
+  "sharePayload": {
+    "suggestedFileName": "hong_550e8400.png",
+    "shareTitle": "홍길동 성적표",
+    "shareText": "홍길동님의 성적은 B+입니다.",
+    "imageAlt": "홍길동의 결과 카드 이미지"
+  }
 }
 ```
 
 오류 응답:
 
-- `400`: 파일 누락, 형식 오류
+- `400`: 파일 누락, 형식 오류, 용량 초과
 - `422`: 얼굴 미검출, 복수 얼굴 감지
 - `500`: 내부 분석 오류
+
+오류 코드는 `missing_file`, `unsupported_format`, `file_too_large`, `no_face`, `multiple_faces`, `analysis_failed`, `share_unavailable`를 사용한다.
 
 ## 8. 시스템 아키텍처
 
